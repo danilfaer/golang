@@ -6,6 +6,7 @@ import (
 
 	"github.com/danilfaer/golang/order/internal/converter"
 	"github.com/danilfaer/golang/order/internal/model"
+	"github.com/k0kubun/pp/v3"
 )
 
 func (s *service) PayOrder(ctx context.Context, orderUUID, userUUID string, paymentMethod model.PaymentMethod) (model.Order, error) {
@@ -16,14 +17,14 @@ func (s *service) PayOrder(ctx context.Context, orderUUID, userUUID string, paym
 
 	// Конвертируем в модель сервиса
 	order := converter.ConvertRepoOrderToModelOrder(repoOrder)
-
 	// Проверяем статус заказа
 	if order.Status != model.StatusPendingPayment {
 		return model.Order{}, model.ErrOrderAlreadyPaid
 	}
 
 	// Обрабатываем платеж через PaymentService
-	transactionUUID, err := s.paymentClient.PayOrder(ctx, orderUUID, userUUID, string(paymentMethod))
+	transactionUUID, err := s.paymentClient.PayOrder(ctx, orderUUID, userUUID, string("PAYMENT_METHOD_"+paymentMethod))
+	pp.Println(transactionUUID, "<-transactionUUID", err, "<-err")
 	if err != nil {
 		return model.Order{}, fmt.Errorf("payment processing failed: %w", err)
 	}

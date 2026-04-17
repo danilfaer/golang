@@ -1,6 +1,6 @@
 module github.com/danilfaer/golang/shared
 
-go 1.24.4
+go 1.25.5
 
 require (
 	github.com/go-faster/errors v0.7.1

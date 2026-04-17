@@ -1,6 +1,6 @@
 module github.com/danilfaer/golang/inventory
 
-go 1.24.4
+go 1.25.5
 
 replace github.com/danilfaer/golang/shared => ../shared
 

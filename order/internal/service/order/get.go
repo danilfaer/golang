@@ -12,6 +12,7 @@ func (s *service) GetOrderByUuid(ctx context.Context, uuid string) (model.Order,
 	if err != nil {
 		return model.Order{}, model.ErrOrderNotFound
 	}
+	
 
 	order := converter.ConvertRepoOrderToModelOrder(orderModel)
 	if order == nil {

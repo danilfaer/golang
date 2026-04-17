@@ -27,7 +27,7 @@ func createSampleParts() map[string]*repoModel.Part {
 		Name:          "Ионный двигатель X-2000",
 		Description:   "Высокоэффективный ионный двигатель для межпланетных полетов",
 		Price:         150000.0,
-		StockQuantity: 5,
+		StockQuantity: 200,
 		Category:      repoModel.CategoryEngine,
 		Dimensions: &repoModel.Dimensions{
 			Length: 120.0,
@@ -50,7 +50,7 @@ func createSampleParts() map[string]*repoModel.Part {
 		Name:          "Плазменный двигатель P-500",
 		Description:   "Мощный плазменный двигатель для тяжелых грузов",
 		Price:         200000.0,
-		StockQuantity: 3,
+		StockQuantity: 100,
 		Category:      repoModel.CategoryEngine,
 		Dimensions: &repoModel.Dimensions{
 			Length: 150.0,
@@ -74,7 +74,7 @@ func createSampleParts() map[string]*repoModel.Part {
 		Name:          "Криогенное топливо H2-O2",
 		Description:   "Высокоэнергетическое криогенное топливо для ракетных двигателей",
 		Price:         50000.0,
-		StockQuantity: 20,
+		StockQuantity: 999,
 		Category:      repoModel.CategoryFuel,
 		Dimensions: &repoModel.Dimensions{
 			Length: 200.0,

@@ -2,7 +2,7 @@ module github.com/danilfaer/golang/payment
 
 replace github.com/danilfaer/golang/shared => ../shared
 
-go 1.24.4
+go 1.25.5
 
 require (
 	github.com/brianvoe/gofakeit/v7 v7.3.0

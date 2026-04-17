@@ -13,11 +13,15 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	orderV1API "github.com/danilfaer/golang/order/internal/api/order/v1"
 	grpcClient "github.com/danilfaer/golang/order/internal/client/grpc"
+	migrator "github.com/danilfaer/golang/order/internal/migrator"
 	orderRepository "github.com/danilfaer/golang/order/internal/repository/order"
 	orderService "github.com/danilfaer/golang/order/internal/service/order"
 	order_v1 "github.com/danilfaer/golang/shared/pkg/api/order/v1"
@@ -30,6 +34,7 @@ const (
 	// Таймауты для HTTP-сервера
 	readHeaderTimeout = 5 * time.Second
 	shutdownTimeout   = 10 * time.Second
+	grpcDialTimeout   = 5 * time.Second
 
 	// Адреса gRPC сервисов
 	inventoryServiceAddr = "localhost:50051"
@@ -37,9 +42,46 @@ const (
 )
 
 func main() {
+	// Загружаем переменные из .env файла
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("❌ Ошибка загрузки переменных из .env файла: %v", err)
+		return
+	}
+	ctx := context.Background()
+
+	// Создаем соединение с PostgreSQL
+	pool, err := pgxpool.New(ctx, os.Getenv("DB_URI"))
+	if err != nil {
+		log.Printf("❌ Ошибка создания соединения с PostgreSQL: %v", err)
+		return
+	}
+	defer pool.Close()
+
+	// Пингуем соединение с PostgreSQL
+	err = pool.Ping(ctx)
+	if err != nil {
+		log.Printf("❌ Ошибка пинга соединения с PostgreSQL: %v", err)
+		return
+	}
+	log.Println("✅ Соединение с PostgreSQL успешно установлено")
+
+	db := stdlib.OpenDBFromPool(pool)
+
+	// Применяем миграции
+	migrator := migrator.NewMigrator(db, os.Getenv("ORDER_MIGRATIONS_DIR"))
+	err = migrator.Up()
+	if err != nil {
+		log.Printf("❌ Ошибка применения миграций: %v", err)
+		return
+	}
+
 	// Создаем gRPC соединения
-	inventoryConn, err := grpc.NewClient(inventoryServiceAddr,
+	inventoryDialCtx, inventoryDialCancel := context.WithTimeout(context.Background(), grpcDialTimeout)
+	defer inventoryDialCancel()
+	inventoryConn, err := grpc.DialContext(inventoryDialCtx, inventoryServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
 	)
 	if err != nil {
 		log.Printf("❌ Ошибка подключения к inventory service: %v", err)
@@ -51,8 +93,11 @@ func main() {
 		}
 	}()
 
-	paymentConn, err := grpc.NewClient(paymentServiceAddr,
+	paymentDialCtx, paymentDialCancel := context.WithTimeout(context.Background(), grpcDialTimeout)
+	defer paymentDialCancel()
+	paymentConn, err := grpc.DialContext(paymentDialCtx, paymentServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
 	)
 	if err != nil {
 		log.Printf("❌ Ошибка подключения к payment service: %v", err)
@@ -73,7 +118,7 @@ func main() {
 	paymentAdapter := grpcClient.NewPaymentClient(paymentClient)
 
 	// Создаем репозиторий и сервис
-	repo := orderRepository.NewRepository()
+	repo := orderRepository.NewRepository(pool)
 	service := orderService.NewOrderService(repo, inventoryAdapter, paymentAdapter)
 	api := orderV1API.NewAPI(service)
 

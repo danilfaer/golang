@@ -1,0 +1,9 @@
+node_modules
+package-lock.json
+go.work.sum
+coverage/
+.github/
+.DS_Store
+.gitignore
+.golangci.yml
+.mockery.yaml

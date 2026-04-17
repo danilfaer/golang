@@ -1,18 +1,13 @@
 package order
 
 import (
-	"sync"
-
-	"github.com/danilfaer/golang/order/internal/repository/model"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type repository struct {
-	mu     sync.RWMutex
-	orders map[string]*model.Order
+	pool *pgxpool.Pool
 }
 
-func NewRepository() *repository {
-	return &repository{
-		orders: make(map[string]*model.Order),
-	}
+func NewRepository(pool *pgxpool.Pool) *repository {
+	return &repository{pool: pool}
 }

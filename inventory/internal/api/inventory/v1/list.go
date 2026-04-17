@@ -13,7 +13,6 @@ func (a *api) ListParts(ctx context.Context, req *inventoryV1.ListPartsRequest) 
 	if err != nil {
 		return nil, err
 	}
-
 	grpcParts := make([]*inventoryV1.Part, len(parts))
 	for i, part := range parts {
 		grpcParts[i] = converter.ConvertPartToGRPC(part)

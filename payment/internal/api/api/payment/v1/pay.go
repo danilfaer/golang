@@ -9,10 +9,9 @@ import (
 )
 
 func (a *api) PayOrder(ctx context.Context, req *paymentV1.PayOrderRequest) (*paymentV1.PayOrderResponse, error) {
-	// Конвертируем gRPC запрос во внутреннюю модель
 	payment := converter.ConvertFromGRPC(req)
-
 	transactionUUID, err := a.paymentService.PayOrder(ctx, payment)
+
 	if err != nil {
 		return nil, model.ErrPayment
 	}
