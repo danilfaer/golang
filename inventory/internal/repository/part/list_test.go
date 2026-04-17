@@ -20,11 +20,20 @@ type ListPartsTestSuite struct {
 
 func (s *ListPartsTestSuite) SetupTest() {
 	s.mockRepository = mocks.NewInventoryRepository(s.T())
-	s.repository = NewRepository()
+	s.repository = nil
+	if integrationColl != nil {
+		s.repository = NewRepository(integrationColl)
+	}
 }
 
 func (s *ListPartsTestSuite) TearDownTest() {
 	s.mockRepository.AssertExpectations(s.T())
+}
+
+func (s *ListPartsTestSuite) skipWithoutMongoDB() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 }
 
 func TestListPartsTestSuite(t *testing.T) {
@@ -32,6 +41,7 @@ func TestListPartsTestSuite(t *testing.T) {
 }
 
 func (s *ListPartsTestSuite) TestListParts_NoFilter() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{}
@@ -46,6 +56,7 @@ func (s *ListPartsTestSuite) TestListParts_NoFilter() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_NilFilter() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 
@@ -59,6 +70,7 @@ func (s *ListPartsTestSuite) TestListParts_NilFilter() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByUUID() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -77,6 +89,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByUUID() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByMultipleUUIDs() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -104,6 +117,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByMultipleUUIDs() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByCategory() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -125,6 +139,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByCategory() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByMultipleCategories() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -151,6 +166,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByMultipleCategories() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByManufacturerCountry() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -172,6 +188,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByManufacturerCountry() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByTags() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -193,6 +210,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByTags() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByMultipleTags() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -223,6 +241,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByMultipleTags() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByNames() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -240,6 +259,7 @@ func (s *ListPartsTestSuite) TestListParts_FilterByNames() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_ComplexFilter() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -263,6 +283,7 @@ func (s *ListPartsTestSuite) TestListParts_ComplexFilter() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_NoMatches() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -279,6 +300,7 @@ func (s *ListPartsTestSuite) TestListParts_NoMatches() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_EmptyFilter() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -299,6 +321,7 @@ func (s *ListPartsTestSuite) TestListParts_EmptyFilter() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_FilterByNonExistentCategory() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{
@@ -399,6 +422,7 @@ func (s *ListPartsTestSuite) TestListParts_MockRepositoryError() {
 }
 
 func (s *ListPartsTestSuite) TestListParts_ConcurrentAccess() {
+	s.skipWithoutMongoDB()
 	// Arrange
 	ctx := context.Background()
 	filter := &repoModel.PartsFilter{

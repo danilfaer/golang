@@ -12,6 +12,8 @@ import (
 	repoModel "github.com/danilfaer/golang/inventory/internal/repository/model"
 )
 
+
+
 type GetPartTestSuite struct {
 	suite.Suite
 	mockRepository *mocks.InventoryRepository
@@ -20,7 +22,10 @@ type GetPartTestSuite struct {
 
 func (s *GetPartTestSuite) SetupTest() {
 	s.mockRepository = mocks.NewInventoryRepository(s.T())
-	s.repository = NewRepository()
+	s.repository = nil
+	if integrationColl != nil {
+		s.repository = NewRepository(integrationColl)
+	}
 }
 
 func (s *GetPartTestSuite) TearDownTest() {
@@ -32,6 +37,9 @@ func TestGetPartTestSuite(t *testing.T) {
 }
 
 func (s *GetPartTestSuite) TestGetPart_Success() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "550e8400-e29b-41d4-a716-446655440001"
@@ -46,10 +54,13 @@ func (s *GetPartTestSuite) TestGetPart_Success() {
 	assert.Equal(s.T(), "Ионный двигатель X-2000", result.Name)
 	assert.Equal(s.T(), repoModel.CategoryEngine, result.Category)
 	assert.Equal(s.T(), 150000.0, result.Price)
-	assert.Equal(s.T(), int64(5), result.StockQuantity)
+	assert.Equal(s.T(), int64(200), result.StockQuantity)
 }
 
 func (s *GetPartTestSuite) TestGetPart_NotFound() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "non-existent-uuid"
@@ -64,6 +75,9 @@ func (s *GetPartTestSuite) TestGetPart_NotFound() {
 }
 
 func (s *GetPartTestSuite) TestGetPart_EmptyUUID() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := ""
@@ -169,6 +183,9 @@ func (s *GetPartTestSuite) TestGetPart_AllCategories() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
+			if s.repository == nil {
+				s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+			}
 			// Act
 			result, err := s.repository.GetPart(context.Background(), tc.uuid)
 
@@ -184,6 +201,9 @@ func (s *GetPartTestSuite) TestGetPart_AllCategories() {
 }
 
 func (s *GetPartTestSuite) TestGetPart_ConcurrentAccess() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "550e8400-e29b-41d4-a716-446655440001"
@@ -209,6 +229,9 @@ func (s *GetPartTestSuite) TestGetPart_ConcurrentAccess() {
 }
 
 func (s *GetPartTestSuite) TestGetPart_WithManufacturer() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "550e8400-e29b-41d4-a716-446655440001"
@@ -226,6 +249,9 @@ func (s *GetPartTestSuite) TestGetPart_WithManufacturer() {
 }
 
 func (s *GetPartTestSuite) TestGetPart_WithDimensions() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "550e8400-e29b-41d4-a716-446655440001"
@@ -244,6 +270,9 @@ func (s *GetPartTestSuite) TestGetPart_WithDimensions() {
 }
 
 func (s *GetPartTestSuite) TestGetPart_WithTags() {
+	if s.repository == nil {
+		s.T().Skip("нужна MONGO_DB_URI для интеграции с MongoDB")
+	}
 	// Arrange
 	ctx := context.Background()
 	uuid := "550e8400-e29b-41d4-a716-446655440001"

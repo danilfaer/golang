@@ -34,7 +34,7 @@ const (
 	// Таймауты для HTTP-сервера
 	readHeaderTimeout = 5 * time.Second
 	shutdownTimeout   = 10 * time.Second
-	grpcDialTimeout   = 5 * time.Second
+	grpcDialTimeout   = 20 * time.Second
 
 	// Адреса gRPC сервисов
 	inventoryServiceAddr = "localhost:50051"
@@ -79,6 +79,7 @@ func main() {
 	// Создаем gRPC соединения
 	inventoryDialCtx, inventoryDialCancel := context.WithTimeout(context.Background(), grpcDialTimeout)
 	defer inventoryDialCancel()
+
 	inventoryConn, err := grpc.DialContext(inventoryDialCtx, inventoryServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),

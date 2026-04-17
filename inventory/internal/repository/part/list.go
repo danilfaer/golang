@@ -3,116 +3,38 @@ package part
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
+
 	repoModel "github.com/danilfaer/golang/inventory/internal/repository/model"
-)
+	partUtils "github.com/danilfaer/golang/inventory/internal/repository/utils"
+)	
 
-func (r *repository) ListParts(_ context.Context, filter *repoModel.PartsFilter) ([]*repoModel.Part, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *repository) ListParts(ctx context.Context, filter *repoModel.PartsFilter) ([]*repoModel.Part, error) {
+	q := partUtils.PartsFilterToMongoFilter(filter)
+	if q == nil {
+		q = bson.M{}
+	}
+	cur, err := r.coll.Find(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
 
-	if filter == nil || isEmptyFilter(filter) {
-		parts := make([]*repoModel.Part, 0, len(r.parts))
-		for _, part := range r.parts {
-			parts = append(parts, part)
+	var out []*repoModel.Part
+	for cur.Next(ctx) {
+		var doc repoModel.Part
+		if err := cur.Decode(&doc); err != nil {
+			return nil, err
 		}
-		return parts, nil
+		// копия на куче: иначе все указатели укажут на одну и ту же переменную цикла
+		row := doc
+		out = append(out, &row)
 	}
-
-	filteredParts := make([]*repoModel.Part, 0)
-
-	for _, part := range r.parts {
-		if matchesFilter(part, filter) {
-			filteredParts = append(filteredParts, part)
-		}
+	if err := cur.Err(); err != nil {
+		return nil, err
 	}
-
-	return filteredParts, nil
-}
-
-// isEmptyFilter проверяет, пуст ли фильтр
-func isEmptyFilter(filter *repoModel.PartsFilter) bool {
-	return len(filter.Uuids) == 0 &&
-		len(filter.Names) == 0 &&
-		len(filter.Categories) == 0 &&
-		len(filter.ManufacturerCountries) == 0 &&
-		len(filter.Tags) == 0
-}
-
-// matchesFilter проверяет, соответствует ли деталь всем условиям фильтра
-func matchesFilter(part *repoModel.Part, filter *repoModel.PartsFilter) bool {
-	return matchesUuidFilter(part, filter.Uuids) &&
-		matchesNameFilter(part, filter.Names) &&
-		matchesCategoryFilter(part, filter.Categories) &&
-		matchesCountryFilter(part, filter.ManufacturerCountries) &&
-		matchesTagFilter(part, filter.Tags)
-}
-
-// matchesUuidFilter проверяет соответствие UUID
-func matchesUuidFilter(part *repoModel.Part, uuids []string) bool {
-	if len(uuids) == 0 {
-		return true
+	if out == nil {
+		out = []*repoModel.Part{}
 	}
-	for _, uuid := range uuids {
-		if part.UUID == uuid {
-			return true
-		}
-	}
-	return false
-}
-
-// matchesNameFilter проверяет соответствие имени
-func matchesNameFilter(part *repoModel.Part, names []string) bool {
-	if len(names) == 0 {
-		return true
-	}
-	for _, name := range names {
-		if part.Name == name {
-			return true
-		}
-	}
-	return false
-}
-
-// matchesCategoryFilter проверяет соответствие категории
-func matchesCategoryFilter(part *repoModel.Part, categories []repoModel.Category) bool {
-	if len(categories) == 0 {
-		return true
-	}
-	for _, category := range categories {
-		if part.Category == category {
-			return true
-		}
-	}
-	return false
-}
-
-// matchesCountryFilter проверяет соответствие страны производителя
-func matchesCountryFilter(part *repoModel.Part, countries []string) bool {
-	if len(countries) == 0 {
-		return true
-	}
-	if part.Manufacturer == nil {
-		return false
-	}
-	for _, country := range countries {
-		if part.Manufacturer.Country == country {
-			return true
-		}
-	}
-	return false
-}
-
-// matchesTagFilter проверяет соответствие тегов
-func matchesTagFilter(part *repoModel.Part, tags []string) bool {
-	if len(tags) == 0 {
-		return true
-	}
-	for _, filterTag := range tags {
-		for _, partTag := range part.Tags {
-			if partTag == filterTag {
-				return true
-			}
-		}
-	}
-	return false
+	return out, nil
 }
