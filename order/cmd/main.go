@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	shutdownTimeout   = 10 * time.Second
-	configPath = "deploy/compose/order/.env"
+	shutdownTimeout = 10 * time.Second
+	configPath      = "deploy/compose/order/.env"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 
 }
 
-func gracefulShutdown()  {
+func gracefulShutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 

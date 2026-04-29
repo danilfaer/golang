@@ -80,10 +80,33 @@ tasks:
         ENV_SUBST={{.ENVSUBST}} "$SCRIPT"
 
         
+  infra-up-local:
+    desc: Поднять Docker-зависимости (сеть, Mongo, Postgres) для локального go run без контейнеризации сервисов
+    deps:
+      - env:generate
+    cmds:
+      - task up-all
+
   app-run:
     desc: Запустить все сервисы параллельно
+    deps:
+      - infra-up-local
     cmds:
       - |
+        # down-all и docker stop не убивают прошлые go run; иначе bind :8080 / :5005x — EADDRINUSE.
+        for port in 50051 50052 8080; do
+          pids=$(lsof -ti ":$port" 2>/dev/null || true)
+          if [ -n "$pids" ]; then
+            echo "⚠️  Порт $port занят (PID: $pids), завершаем процесс(ы)..."
+            echo "$pids" | xargs kill 2>/dev/null || true
+            sleep 1
+            pids2=$(lsof -ti ":$port" 2>/dev/null || true)
+            if [ -n "$pids2" ]; then
+              echo "$pids2" | xargs kill -9 2>/dev/null || true
+            fi
+          fi
+        done
+
         go run inventory/cmd/main.go &
         INVENTORY_PID=$!
         
