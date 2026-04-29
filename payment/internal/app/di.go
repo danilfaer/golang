@@ -15,7 +15,7 @@ type diContainer struct {
 	paymentService service.PaymentService
 }
 
-func newDIContainer() *diContainer {
+func NewDiContainer() *diContainer {
 	return &diContainer{}
 }
 

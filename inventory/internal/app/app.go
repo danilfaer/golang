@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/danilfaer/golang/inventory/internal/config"
 	"github.com/danilfaer/golang/platform/pkg/closer"
@@ -40,7 +39,7 @@ func (a *App) Run(ctx context.Context) error {
 
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(ctx context.Context) error{
-		a.initDIContainer,
+		a.initDiContainer,
 		a.initLogger,
 		a.initCloser,
 		a.initMongo,
@@ -57,8 +56,8 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initDIContainer(ctx context.Context) error {
-	a.diContainer = newDIContainer()
+func (a *App) initDiContainer(ctx context.Context) error {
+	a.diContainer = NewDiContainer()
 	return nil
 }
 
@@ -75,23 +74,10 @@ func (a *App) initCloser(ctx context.Context) error {
 	return nil
 }
 
-// initMongo создаёт соединение, проверяет ping и регистрирует Disconnect в closer.
+// initMongo инициализирует Mongo-клиент: Connect, Ping и регистрация Disconnect в di.MongoDBClient/closer.
 func (a *App) initMongo(ctx context.Context) error {
-	if err := a.diContainer.InitMongo(ctx); err != nil {
-		return fmt.Errorf("mongo connect: %w", err)
-	}
-
-	c := a.diContainer.MongoClient()
-	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	if err := c.Ping(pingCtx, nil); err != nil {
-		return fmt.Errorf("mongo ping: %w", err)
-	}
-
-	closer.AddNamed("MongoDB", func(shutdownCtx context.Context) error {
-		return c.Disconnect(shutdownCtx)
-	})
-
+	// Вся логика подключения и отложенного закрытия — в diContainer.MongoDBClient.
+	_ = a.diContainer.MongoDBClient(ctx)
 	return nil
 }
 
@@ -119,11 +105,12 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		grpc.UnaryInterceptor(sharedInterceptors.UnaryErrorInterceptor()),
 	)
 
-	inventoryV1.RegisterInventoryServiceServer(s, a.diContainer.InventoryGRPCAPI(ctx))
+	inventoryV1.RegisterInventoryServiceServer(s, a.diContainer.InventoryV1API(ctx))
 	reflection.Register(s)
 
 	a.grpcServer = s
 
+	// Останавливаем приём новых запросов и ждём завершения текущих RPC.
 	closer.AddNamed("gRPC Server", func(ctx context.Context) error {
 		a.grpcServer.GracefulStop()
 		return nil

@@ -40,7 +40,7 @@ func (a *App) Run(ctx context.Context) error {
 func (a *App) initDeps(ctx context.Context) error {
 	// Порядок важен для обратного закрытия в closer (последний зарегистрированный — первым).
 	inits := []func(ctx context.Context) error{
-		a.initDIContainer,
+		a.initDiContainer,
 		a.initLogger,
 		a.initCloser,
 		a.initListener,
@@ -56,11 +56,12 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initDIContainer(ctx context.Context) error {
-	a.diContainer = newDIContainer()
+func (a *App) initDiContainer(ctx context.Context) error {
+	a.diContainer = NewDiContainer()
 	return nil
 }
 
+// initLogger поднимает zap по настройкам из .env (уровень, JSON).
 func (a *App) initLogger(ctx context.Context) error {
 	return logger.Init(
 		config.AppConfig().Logger.Level(),
@@ -104,6 +105,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	// GracefulStop разблокирует Serve после сигнала (через closer).
 	closer.AddNamed("gRPC Server", func(ctx context.Context) error {
+		// Блокируется до завершения активных RPC или отмены контекста shutdown.
 		a.grpcServer.GracefulStop()
 		return nil
 	})
