@@ -4,7 +4,11 @@ go 1.25.5
 
 replace github.com/danilfaer/golang/shared => ../shared
 
+replace github.com/danilfaer/golang/platform => ../platform
+
 require (
+	github.com/caarlos0/env/v11 v11.4.0
+	github.com/danilfaer/golang/platform v0.0.0-00010101000000-000000000000
 	github.com/danilfaer/golang/shared v0.0.0-00010101000000-000000000000
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0

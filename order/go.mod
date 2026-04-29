@@ -4,16 +4,19 @@ go 1.25.5
 
 replace github.com/danilfaer/golang/shared => ../shared
 
+replace github.com/danilfaer/golang/platform => ../platform
+
 require (
+	github.com/caarlos0/env/v11 v11.4.0
+	github.com/danilfaer/golang/platform v0.0.0-00010101000000-000000000000
 	github.com/danilfaer/golang/shared v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/k0kubun/pp/v3 v3.5.1
-	github.com/pressly/goose/v3 v3.27.0
 	github.com/stretchr/testify v1.11.1
-	google.golang.org/grpc v1.79.1
+	google.golang.org/grpc v1.80.0
 )
 
 require (
@@ -35,6 +38,7 @@ require (
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/ogen-go/ogen v1.14.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pressly/goose/v3 v3.27.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -43,7 +47,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
+	go.uber.org/zap v1.27.1 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
 	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Part struct {
 	UUID          string
@@ -56,6 +58,7 @@ type DoubleValue struct {
 type BoolValue struct {
 	BoolValue bool
 }
+
 
 func (v StringValue) isValue() {}
 func (v Int64Value) isValue()  {}
